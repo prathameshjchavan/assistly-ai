@@ -39,7 +39,7 @@ export interface Message {
 }
 
 export interface GetChatbotByIdResponse {
-	chatbot: Chatbot;
+	chatbots: Chatbot;
 }
 
 export interface GetChatbotByIdVariables {
