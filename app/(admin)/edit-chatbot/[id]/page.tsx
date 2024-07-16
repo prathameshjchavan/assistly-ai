@@ -116,7 +116,7 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 						</Button>
 					</form>
 
-					<ul>
+					<ul className="flex flex-wrap-reverse gap-5">
 						{data?.chatbots.chatbot_characteristics.map((characteristic) => (
 							<Characteristic
 								key={characteristic.id}
