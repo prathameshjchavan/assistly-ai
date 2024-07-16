@@ -13,19 +13,12 @@ interface CharacteristicProps {
 
 const Characteristic = ({ characteristic }: CharacteristicProps) => {
 	const [removeCharacteristic] = useMutation(REMOVE_CHARACTERISTIC, {
-		variables: {
-			characteristicId: characteristic.id,
-		},
 		refetchQueries: ["GetChatbotById"],
 	});
 
-	const handleRemoveCharacteristic = async () => {
+	const handleRemoveCharacteristic = async (characteristicId: number) => {
 		try {
-			await removeCharacteristic({
-				variables: {
-					id: characteristic.id,
-				},
-			});
+			await removeCharacteristic({ variables: { characteristicId } });
 		} catch (error) {
 			console.error(error);
 		}
@@ -36,7 +29,7 @@ const Characteristic = ({ characteristic }: CharacteristicProps) => {
 			{characteristic.content}
 			<OctagonX
 				onClick={() => {
-					const promise = handleRemoveCharacteristic();
+					const promise = handleRemoveCharacteristic(characteristic.id);
 					toast.promise(promise, {
 						loading: "Removing...",
 						success: "Characteristic removed",
