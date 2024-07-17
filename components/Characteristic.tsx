@@ -4,7 +4,6 @@ import { OctagonX } from "lucide-react";
 import { ChatbotCharacteristic } from "@/types/types";
 import { useMutation } from "@apollo/client";
 import { REMOVE_CHARACTERISTIC } from "@/graphql/mutations";
-import { GET_CHATBOT_BY_ID } from "@/graphql/queries";
 import { toast } from "sonner";
 
 interface CharacteristicProps {

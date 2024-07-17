@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Copy } from "lucide-react";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 
 import Avatar from "@/components/Avatar";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { BASE_URL } from "@/graphql/apolloClient";
 import { GET_CHATBOT_BY_ID } from "@/graphql/queries";
 import { GetChatbotByIdResponse, GetChatbotByIdVariables } from "@/types/types";
 import Characteristic from "@/components/Characteristic";
+import { DELETE_CHATBOT } from "@/graphql/mutations";
+import { redirect } from "next/navigation";
 
 interface EditChatbotPageProps {
 	params: { id: string };
@@ -30,6 +32,29 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 			id,
 		},
 	});
+	const [deleteChatbot] = useMutation(DELETE_CHATBOT, {
+		refetchQueries: ["GetChatbotById"],
+		awaitRefetchQueries: true,
+	});
+
+	const handleDelete = async (id: string) => {
+		const isConfirmed = window.confirm(
+			"Are you sure you want to delete this chatbot?"
+		);
+		if (!isConfirmed) return;
+
+		try {
+			const promise = deleteChatbot({ variables: { id } });
+			toast.promise(promise, {
+				loading: "Deleting...",
+				success: "Chatbot Successfully deleted!",
+				error: "Failed to delete chatbot",
+			});
+		} catch (error) {
+			console.error("Error deleting chatbot: ", error);
+			toast.error("Failed to delete chatbot");
+		}
+	};
 
 	useEffect(() => {
 		if (data) {
@@ -42,6 +67,17 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 
 		setUrl(url);
 	}, [id]);
+
+	if (loading)
+		return (
+			<div className="mx-auto animate-spin p-10">
+				<Avatar seed="PAPAFAM Support Agent" />
+			</div>
+		);
+
+	if (error) return <p>Error: {error.message}</p>;
+
+	if (!data?.chatbots) return redirect("/view-chatbots");
 
 	return (
 		<div className="px-0 md:p-10">
@@ -73,7 +109,7 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 				<Button
 					variant="destructive"
 					className="absolute top-2 right-2 h-8 w-2"
-					onClick={() => {}}
+					onClick={() => handleDelete(id)}
 				>
 					X
 				</Button>
