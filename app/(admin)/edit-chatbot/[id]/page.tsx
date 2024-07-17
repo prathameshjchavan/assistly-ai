@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Copy } from "lucide-react";
@@ -13,7 +13,7 @@ import { BASE_URL } from "@/graphql/apolloClient";
 import { GET_CHATBOT_BY_ID } from "@/graphql/queries";
 import { GetChatbotByIdResponse, GetChatbotByIdVariables } from "@/types/types";
 import Characteristic from "@/components/Characteristic";
-import { ADD_CHARACTERISTIC, DELETE_CHATBOT } from "@/graphql/mutations";
+import { ADD_CHARACTERISTIC, DELETE_CHATBOT, UPDATE_CHATBOT } from "@/graphql/mutations";
 import { redirect } from "next/navigation";
 
 interface EditChatbotPageProps {
@@ -37,6 +37,9 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 		awaitRefetchQueries: true,
 	});
 	const [addCharacteristic] = useMutation(ADD_CHARACTERISTIC, {
+		refetchQueries: ["GetChatbotById"],
+	});
+	const [updateChatbot] = useMutation(UPDATE_CHATBOT, {
 		refetchQueries: ["GetChatbotById"],
 	});
 
@@ -76,6 +79,27 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 			});
 		} catch (error) {
 			console.error("Failed to add characteristic: ", error);
+		}
+	};
+
+	const handleUpdateChatbot = (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		try {
+			const promise = updateChatbot({
+				variables: {
+					id,
+					name: chatbotName,
+				},
+			});
+
+			toast.promise(promise, {
+				loading: "Updating...",
+				success: "Chatbot name successfully updated!",
+				error: "Failed to update chatbot",
+			});
+		} catch (error) {
+			console.error("Failed to update chatbot: ", error);
 		}
 	};
 
@@ -139,7 +163,10 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 
 				<div className="flex space-x-4">
 					<Avatar seed={chatbotName} />
-					<form className="flex flex-1 space-x-2 items-center">
+					<form
+						onSubmit={handleUpdateChatbot}
+						className="flex flex-1 space-x-2 items-center"
+					>
 						<Input
 							value={chatbotName}
 							onChange={(e) => setChatbotName(e.target.value)}
@@ -159,13 +186,14 @@ const EditChatbotPage = ({ params: { id } }: EditChatbotPageProps) => {
 					in your conversations with your customers & users
 				</p>
 
-				<div>
+				<div className="bg-gray-200 p-5 rounded-md mt-5">
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();
 							handleAddCharacteristic(newCharacteristic);
 							setNewCharacteristic("");
 						}}
+						className="flex space-x-2 mb-5"
 					>
 						<Input
 							type="text"

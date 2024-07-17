@@ -19,7 +19,7 @@ const Characteristic = ({ characteristic }: CharacteristicProps) => {
 		try {
 			await removeCharacteristic({ variables: { characteristicId } });
 		} catch (error) {
-			console.error(error);
+			console.error("Failed to remove characteristic: ", error);
 		}
 	};
 
