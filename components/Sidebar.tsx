@@ -4,7 +4,7 @@ import Link from "next/link";
 const Sidebar = () => {
 	return (
 		<div className="bg-white text-white p-5">
-			<ul className="gap-5 flex lg:flex-col">
+			<ul className="gap-5 flex md:flex-col">
 				<li className="flex-1">
 					<Link
 						href="/create-chatbot"
