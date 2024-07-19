@@ -57,7 +57,7 @@ const ViewChatbotsPage = async () => {
 				{sortedChatbotsByUser.map((chatbot) => (
 					<Link key={chatbot.id} href={`/edit-chatbot/${chatbot.id}`}>
 						<li className="relative p-10 border rounded-md max-w-3xl bg-white">
-							<div>
+							<div className="flex justify-between items-center">
 								<div className="flex items-center space-x-4">
 									<Avatar seed={chatbot.name} />
 									<h2 className="text-xl font-bold">{chatbot.name}</h2>
@@ -87,6 +87,9 @@ const ViewChatbotsPage = async () => {
 										</li>
 									))}
 								</ul>
+
+								<h3 className="italic">No. of Sessions:</h3>
+								<p>{chatbot.chat_sessions.length}</p>
 							</div>
 						</li>
 					</Link>
