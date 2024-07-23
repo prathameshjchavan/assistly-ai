@@ -8,6 +8,7 @@ import Markdown from "react-markdown";
 import { Message } from "@/types/types";
 import Avatar from "./Avatar";
 import { formatTimestamp } from "@/utils/formatTimestamp";
+import { useEffect, useRef } from "react";
 
 interface MessagesProps {
 	messages: Message[];
@@ -16,7 +17,12 @@ interface MessagesProps {
 
 const Messages = ({ messages, chatbotName }: MessagesProps) => {
 	const path = usePathname();
+	const ref = useRef<HTMLDivElement>(null);
 	const isReviewPage = path.includes("review-sessions");
+
+	useEffect(() => {
+		if (ref.current) ref.current.scrollIntoView({ behavior: "smooth" });
+	}, [messages]);
 
 	return (
 		<div className="flex-1 flex flex-col overflow-y-auto space-y-10 py-10 px-5 bg-white rounded-lg">
@@ -110,6 +116,8 @@ const Messages = ({ messages, chatbotName }: MessagesProps) => {
 					</div>
 				);
 			})}
+
+			<div ref={ref} />
 		</div>
 	);
 };
