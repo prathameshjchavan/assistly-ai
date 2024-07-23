@@ -43,3 +43,30 @@ export const UPDATE_CHATBOT = gql`
       created_at
     }
 }`;
+
+export const INSERT_MESSAGE = gql`
+  mutation InsertMessage($chat_session_id: Int!, $content: String!, $sender: String!, $created_at: DateTime!) {
+    insertMessages(content: $content, created_at: $created_at, sender: $sender, chat_session_id: $chat_session_id) {
+      id
+      content
+      created_at
+      sender
+    }
+  }
+`;
+
+export const INSERT_GUEST = gql`
+  mutation InsertGuest($name: String!, $email: String!, $created_at: DateTime!) {
+    insertGuests(created_at: $created_at, name: $name, email: $email) {
+      id
+    }
+  }
+`;
+
+export const INSERT_CHAT_SESSION = gql`
+  mutation InsertChatSession($chatbot_id: Int!, $guest_id: Int!, $created_at: DateTime!) {
+    insertChat_sessions(created_at: $created_at, chatbot_id: $chatbot_id, guest_id: $guest_id) {
+      id
+    }
+  }
+`;

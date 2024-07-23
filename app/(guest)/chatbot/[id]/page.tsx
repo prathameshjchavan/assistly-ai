@@ -14,6 +14,7 @@ import { Message } from "@/types/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import startNewChat from "@/lib/startNewChat";
 
 interface ChatbotPageProps {
 	params: { id: string };
@@ -27,7 +28,7 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [messages, setMessages] = useState<Message[]>([]);
 
-	const handleSubmit =  async (e: FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
 		const chatId = await startNewChat(name, email, Number(id));
