@@ -1,6 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 import {
 	Dialog,
@@ -28,16 +31,28 @@ import {
 	GET_MESSAGES_BY_CHAT_SESSION_ID,
 } from "@/graphql/queries";
 import Messages from "@/components/Messages";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
 
 interface ChatbotPageProps {
 	params: { id: string };
 }
 
+const formSchema = z.object({
+	message: z.string().min(2, "Your message is too short!"),
+});
+
 const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 	const [name, setName] = useState<string>("");
 	const [email, setEmail] = useState<string>("");
-	const [isOpen, setIsOpen] = useState<boolean>(true);
-	const [chatId, setChatId] = useState<number>(0);
+	const [isOpen, setIsOpen] = useState<boolean>(false);
+	const [chatId, setChatId] = useState<number>(12);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [messages, setMessages] = useState<Message[]>([]);
 
@@ -58,6 +73,13 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 		skip: !chatId,
 	});
 
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			message: "",
+		},
+	});
+
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
@@ -67,6 +89,45 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 		setLoading(false);
 		setIsOpen(false);
 	};
+
+	function onSubmit(values: z.infer<typeof formSchema>) {
+		setLoading(true);
+
+		const { message: formMessage } = values;
+		const message = formMessage;
+
+		form.reset();
+
+		if (!email || !name) {
+			setIsOpen(true);
+			setLoading(false);
+			return;
+		}
+
+		if (!message.trim()) return;
+
+		const userMessage: Message = {
+			id: Date.now(),
+			content: message,
+			created_at: new Date().toISOString(),
+			chat_session_id: chatId,
+			sender: "user",
+		};
+
+		const loadingMessage: Message = {
+			id: Date.now() + 1,
+			content: "Thinking...",
+			created_at: new Date().toISOString(),
+			chat_session_id: chatId,
+			sender: "ai",
+		};
+
+		setMessages((prevMessages) => [
+			...prevMessages,
+			userMessage,
+			loadingMessage,
+		]);
+	}
 
 	useEffect(() => {
 		if (!data) return;
@@ -141,6 +202,38 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 					messages={messages}
 					chatbotName={chatbotData?.chatbots.name!}
 				/>
+
+				<Form {...form}>
+					<form
+						className="flex items-start sticky bottom-0 z-50 space-x-4 drop-shadow-lg p-4 bg-gray-100 rounded-md"
+						onSubmit={form.handleSubmit(onSubmit)}
+					>
+						<FormField
+							control={form.control}
+							name="message"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel hidden>Message</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Type a message..."
+											className="p-8"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<Button
+							type="submit"
+							className="h-full"
+							disabled={form.formState.isSubmitting || !form.formState.isValid}
+						>
+							Send
+						</Button>
+					</form>
+				</Form>
 			</div>
 		</div>
 	);
