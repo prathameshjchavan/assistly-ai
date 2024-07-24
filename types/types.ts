@@ -96,7 +96,7 @@ export interface InsertGuestVariables {
 export interface InsertChatSessionResponse {
 	insertChat_sessions: {
 		id: number;
-	}
+	};
 }
 
 export interface InsertChatSessionVariables {
@@ -111,7 +111,7 @@ export interface InsertMessageResponse {
 		content: string;
 		created_at: Date;
 		sender: string;
-	}
+	};
 }
 
 export interface InsertMessageVariables {
@@ -119,4 +119,15 @@ export interface InsertMessageVariables {
 	content: string;
 	sender: string;
 	created_at: Date;
+}
+
+export interface MessagesByChatSessionIdResponse {
+	chat_sessions: {
+		id: number;
+		messages: Message[]
+	};
+}
+
+export interface MessagesByChatSessionIdVariables {
+	chat_session_id: number;
 }

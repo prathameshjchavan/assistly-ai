@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import {
 	Dialog,
@@ -10,11 +10,24 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Message } from "@/types/types";
+import {
+	GetChatbotByIdResponse,
+	GetChatbotByIdVariables,
+	Message,
+	MessagesByChatSessionIdResponse,
+	MessagesByChatSessionIdVariables,
+} from "@/types/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import startNewChat from "@/lib/startNewChat";
+import Avatar from "@/components/Avatar";
+import { useQuery } from "@apollo/client";
+import {
+	GET_CHATBOT_BY_ID,
+	GET_MESSAGES_BY_CHAT_SESSION_ID,
+} from "@/graphql/queries";
+import Messages from "@/components/Messages";
 
 interface ChatbotPageProps {
 	params: { id: string };
@@ -28,6 +41,23 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [messages, setMessages] = useState<Message[]>([]);
 
+	const { data: chatbotData } = useQuery<
+		GetChatbotByIdResponse,
+		GetChatbotByIdVariables
+	>(GET_CHATBOT_BY_ID, { variables: { id } });
+
+	const {
+		loading: loadingQuery,
+		error,
+		data,
+	} = useQuery<
+		MessagesByChatSessionIdResponse,
+		MessagesByChatSessionIdVariables
+	>(GET_MESSAGES_BY_CHAT_SESSION_ID, {
+		variables: { chat_session_id: chatId },
+		skip: !chatId,
+	});
+
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
@@ -37,6 +67,12 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 		setLoading(false);
 		setIsOpen(false);
 	};
+
+	useEffect(() => {
+		if (!data) return;
+
+		setMessages(data.chat_sessions.messages);
+	}, [data]);
 
 	return (
 		<div className="w-full flex bg-gray-100">
@@ -86,6 +122,26 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 					</form>
 				</DialogContent>
 			</Dialog>
+
+			<div className="flex flex-col w-full max-w-3xl mx-auto bg-white md:rounded-t-lg shadow-2xl md:mt-10">
+				<div className="pb-4 border-b sticky top-0 z-50 bg-[#4D7DFB] py-5 px-10 text-white md:rounded-t-lg flex items-center space-x-4">
+					<Avatar
+						seed={chatbotData?.chatbots.name!}
+						className="h-12 w-12 bg-white rounded-full border-2 border-white"
+					/>
+					<div>
+						<h1 className="truncate text-lg">{chatbotData?.chatbots.name}</h1>
+						<p className="text-sm text-gray-300">
+							⚡ Typically replies Instantly
+						</p>
+					</div>
+				</div>
+
+				<Messages
+					messages={messages}
+					chatbotName={chatbotData?.chatbots.name!}
+				/>
+			</div>
 		</div>
 	);
 };
