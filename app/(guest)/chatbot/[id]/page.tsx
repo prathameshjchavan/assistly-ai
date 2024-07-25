@@ -51,8 +51,8 @@ const formSchema = z.object({
 const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 	const [name, setName] = useState<string>("");
 	const [email, setEmail] = useState<string>("");
-	const [isOpen, setIsOpen] = useState<boolean>(false);
-	const [chatId, setChatId] = useState<number>(12);
+	const [isOpen, setIsOpen] = useState<boolean>(true);
+	const [chatId, setChatId] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [messages, setMessages] = useState<Message[]>([]);
 
@@ -90,7 +90,7 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 		setIsOpen(false);
 	};
 
-	function onSubmit(values: z.infer<typeof formSchema>) {
+	async function onSubmit(values: z.infer<typeof formSchema>) {
 		setLoading(true);
 
 		const { message: formMessage } = values;
@@ -127,6 +127,33 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 			userMessage,
 			loadingMessage,
 		]);
+
+		try {
+			const response = await fetch("/api/send-message", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					name,
+					chat_session_id: chatId,
+					chatbot_id: id,
+					content: message,
+				}),
+			});
+
+			const result = await response.json();
+
+			setMessages((prevMessages) =>
+				prevMessages.map((msg) =>
+					msg.id === loadingMessage.id
+						? { ...msg, content: result.content, id: result.id }
+						: msg
+				)
+			);
+		} catch (error) {
+			console.error("Error sending message: ", error);
+		}
 	}
 
 	useEffect(() => {
@@ -212,7 +239,7 @@ const ChatbotPage = ({ params: { id } }: ChatbotPageProps) => {
 							control={form.control}
 							name="message"
 							render={({ field }) => (
-								<FormItem>
+								<FormItem className="flex-1">
 									<FormLabel hidden>Message</FormLabel>
 									<FormControl>
 										<Input
